@@ -266,7 +266,7 @@ public class AssessmentController {
 	public ResponseEntity<SBApiResponse> saveUserAssessmentV5(@Valid @RequestBody Map<String, Object> requestBody,
 																@RequestHeader("x-authenticated-user-token") String authUserToken,@RequestParam(name = "editMode" ,required = false) String editMode) {
 		boolean edit = !StringUtils.isEmpty(editMode) && Boolean.parseBoolean(editMode);
-		SBApiResponse submitResponse = assessmentServiceV5.submitAssessmentAsync(requestBody, authUserToken,edit);
+		SBApiResponse submitResponse = assessmentServiceV5.saveAssessmentAsync(requestBody, authUserToken,edit);
 		return new ResponseEntity<>(submitResponse, submitResponse.getResponseCode());
 	}
 }
