@@ -989,7 +989,7 @@ public class AssessmentServiceV5Impl implements AssessmentServiceV5 {
                     response.getResult().put(Constants.QUESTION_SET, questionSetFromAssessment);
                     Boolean isAssessmentUpdatedToDB = assessmentRepository.updateUserAssesmentDataToDB(userId,
                             (String) submitRequest.get(Constants.IDENTIFIER), submitRequest, null, null,
-                            null);
+                            existingAssessmentStarTimeTimestamp);
                     if (Boolean.FALSE.equals(isAssessmentUpdatedToDB)) {
                         errMsg = Constants.ASSESSMENT_DATA_START_TIME_NOT_UPDATED;
                         response.getResult().put("ASSESSMENT_UPDATE", false);
