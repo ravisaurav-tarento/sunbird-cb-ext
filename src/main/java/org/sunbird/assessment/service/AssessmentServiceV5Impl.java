@@ -958,7 +958,7 @@ public class AssessmentServiceV5Impl implements AssessmentServiceV5 {
             else {
                 logger.info("Assessment read... user has details... ");
                 Date existingAssessmentStartTime = (Date) (existingDataList.get(0)
-                        .get(Constants.START_TIME_KEY));
+                        .get(Constants.START_TIME));
                 Date existingAssessmentEndTime = (Date) (existingDataList.get(0)
                         .get(Constants.END_TIME));
                 Timestamp existingAssessmentEndTimeTimestamp = new Timestamp(
