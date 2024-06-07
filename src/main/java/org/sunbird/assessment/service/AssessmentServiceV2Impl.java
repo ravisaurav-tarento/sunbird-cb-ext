@@ -416,7 +416,7 @@ public class AssessmentServiceV2Impl implements AssessmentServiceV2 {
             if (questionSetFromAssessment.get(Constants.START_TIME) != null) {
                 Long existingAssessmentStartTime = (Long) questionSetFromAssessment.get(Constants.START_TIME);
                 Timestamp startTime = new Timestamp(existingAssessmentStartTime);
-                Boolean isAssessmentUpdatedToDB = assessmentRepository.updateUserAssesmentDataToDB(userId, (String) submitRequest.get(Constants.IDENTIFIER), submitRequest, result, Constants.SUBMITTED, startTime);
+                Boolean isAssessmentUpdatedToDB = assessmentRepository.updateUserAssesmentDataToDB(userId, (String) submitRequest.get(Constants.IDENTIFIER), submitRequest, result, Constants.SUBMITTED, startTime,null);
                 if (Boolean.TRUE.equals(isAssessmentUpdatedToDB)) {
                     Map<String, Object> kafkaResult = new HashMap<>();
                     kafkaResult.put(Constants.CONTENT_ID_KEY, submitRequest.get(Constants.IDENTIFIER));

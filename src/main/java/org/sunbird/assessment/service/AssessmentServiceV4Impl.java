@@ -863,7 +863,7 @@ public class AssessmentServiceV4Impl implements AssessmentServiceV4 {
                 Timestamp startTime = new Timestamp(existingAssessmentStartTime);
                 Boolean isAssessmentUpdatedToDB = assessmentRepository.updateUserAssesmentDataToDB(userId,
                         (String) submitRequest.get(Constants.IDENTIFIER), submitRequest, result, Constants.SUBMITTED,
-                        startTime);
+                        startTime,null);
                 if (Boolean.TRUE.equals(isAssessmentUpdatedToDB)) {
                     Map<String, Object> kafkaResult = new HashMap<>();
                     kafkaResult.put(Constants.CONTENT_ID_KEY, submitRequest.get(Constants.IDENTIFIER));

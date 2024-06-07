@@ -269,4 +269,13 @@ public class AssessmentController {
 		SBApiResponse submitResponse = assessmentServiceV5.saveAssessmentAsync(requestBody, authUserToken,edit);
 		return new ResponseEntity<>(submitResponse, submitResponse.getResponseCode());
 	}
+
+	@GetMapping("/v5/quml/assessment/savepoint/{assessmentIdentifier}")
+	public ResponseEntity<SBApiResponse> readSavePointV5(
+			@PathVariable("assessmentIdentifier") String assessmentIdentifier,
+			@RequestHeader(Constants.X_AUTH_TOKEN) String token,@RequestParam(name = "editMode" ,required = false) String editMode) {
+		boolean edit = !StringUtils.isEmpty(editMode) && Boolean.parseBoolean(editMode);
+		SBApiResponse readResponse = assessmentServiceV5.readAssessmentSavePoint(assessmentIdentifier, token,edit);
+		return new ResponseEntity<>(readResponse, readResponse.getResponseCode());
+	}
 }

@@ -693,6 +693,7 @@ public class Constants {
 	public static final String STATUS_IS_IN_PROGRESS = "isInProgress";
 	public static final String ASSESSMENT_SUBMIT_IN_PROGRESS = "SUBMIT_IN_PROGRESS";
 	public static final String ASSESSMENT_READ_RESPONSE_KEY = "assessmentReadResponse";
+	public static final String ASSESSMENT_SAVE_READ_RESPONSE_KEY = "savepointsubmitreq";
 	public static final String START_TIME_KEY = "startTime";
 	public static final String VERIFIED_PROFILE_FIELDS_KEY = "verifiedProfileFields";
 	public static final String PROFILE_APPROVAL_FIELDS_KEY = "profileApprovalFields";
@@ -1084,6 +1085,8 @@ public class Constants {
 	public static final String RETAKE_ATTEMPT_CONSUMED = "retakeAttemptsConsumed";
 	public static final String TOTAL_PERCENTAGE = "totalPercentage";
 	public static final String SECTION_LEVEL_DEFINITION = "sectionLevelDefinition";
+
+	public static final String ASSESSMENT_HIERARCHY_SAVE_NOT_AVBL = "Assessment hierarchy save point not available, failed to process request";
 
 	private Constants() {
 		throw new IllegalStateException("Utility class");

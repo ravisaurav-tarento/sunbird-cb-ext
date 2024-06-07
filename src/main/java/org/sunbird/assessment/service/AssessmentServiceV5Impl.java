@@ -750,7 +750,7 @@ public class AssessmentServiceV5Impl implements AssessmentServiceV5 {
                 Timestamp startTime = new Timestamp(existingAssessmentStartTime);
                 Boolean isAssessmentUpdatedToDB = assessmentRepository.updateUserAssesmentDataToDB(userId,
                         (String) submitRequest.get(Constants.IDENTIFIER), submitRequest, result, Constants.SUBMITTED,
-                        startTime);
+                        startTime,null);
                 if (Boolean.TRUE.equals(isAssessmentUpdatedToDB)) {
                     Map<String, Object> kafkaResult = new HashMap<>();
                     kafkaResult.put(Constants.CONTENT_ID_KEY, submitRequest.get(Constants.IDENTIFIER));
@@ -988,8 +988,8 @@ public class AssessmentServiceV5Impl implements AssessmentServiceV5 {
                             existingAssessmentStarTimeTimestamp.getTime());
                     response.getResult().put(Constants.QUESTION_SET, questionSetFromAssessment);
                     Boolean isAssessmentUpdatedToDB = assessmentRepository.updateUserAssesmentDataToDB(userId,
-                            (String) submitRequest.get(Constants.IDENTIFIER), submitRequest, null, null,
-                            existingAssessmentStarTimeTimestamp);
+                            (String) submitRequest.get(Constants.IDENTIFIER), null, null, null,
+                            existingAssessmentStarTimeTimestamp,submitRequest);
                     if (Boolean.FALSE.equals(isAssessmentUpdatedToDB)) {
                         errMsg = Constants.ASSESSMENT_DATA_START_TIME_NOT_UPDATED;
                         response.getResult().put("ASSESSMENT_UPDATE", false);
@@ -1014,4 +1014,78 @@ public class AssessmentServiceV5Impl implements AssessmentServiceV5 {
         }
         return response;
     }
+
+    public SBApiResponse readAssessmentSavePoint(String assessmentIdentifier, String token,boolean editMode) {
+        logger.info("AssessmentServicev5Impl::readSaveAssessment... Started");
+        SBApiResponse response = ProjectUtil.createDefaultResponse(Constants.API_READ_ASSESSMENT);
+        String errMsg = "";
+        try {
+            String userId = accessTokenValidator.fetchUserIdFromAccessToken(token);
+            if (StringUtils.isBlank(userId)) {
+                updateErrorDetails(response, Constants.USER_ID_DOESNT_EXIST, HttpStatus.INTERNAL_SERVER_ERROR);
+                return response;
+            }
+            logger.info(String.format("ReadSaveAssessment... UserId: %s, AssessmentIdentifier: %s", userId, assessmentIdentifier));
+            Map<String, Object> assessmentAllDetail = null ;
+            // Step-1 : Read assessment using assessment Id from the Assessment Service
+            if(editMode) {
+                assessmentAllDetail = assessUtilServ.fetchHierarchyFromAssessServc(assessmentIdentifier,token);
+            }
+            else {
+                assessmentAllDetail = assessUtilServ
+                        .readAssessmentHierarchyFromCache(assessmentIdentifier,editMode,token);
+            }
+            if (MapUtils.isEmpty(assessmentAllDetail)) {
+                updateErrorDetails(response, Constants.ASSESSMENT_HIERARCHY_READ_FAILED,
+                        HttpStatus.INTERNAL_SERVER_ERROR);
+                return response;
+            }
+            //Step-2 : If Practice Assessment return without saving
+            if (Constants.PRACTICE_QUESTION_SET
+                    .equalsIgnoreCase((String) assessmentAllDetail.get(Constants.PRIMARY_CATEGORY))||editMode) {
+                response.getResult().put(Constants.QUESTION_SET, readAssessmentLevelData(assessmentAllDetail));
+                return response;
+            }
+            // Step-3 : If read user submitted assessment
+            List<Map<String, Object>> existingDataList = assessUtilServ.readUserSubmittedAssessmentRecords(
+                    userId, assessmentIdentifier);
+            Timestamp assessmentStartTime = new Timestamp(new Date().getTime());
+            if (existingDataList.isEmpty()) {
+                updateErrorDetails(response, Constants.ASSESSMENT_HIERARCHY_SAVE_NOT_AVBL,
+                        HttpStatus.NO_CONTENT);
+                return response;
+            } else {
+                logger.info("Assessment read... user has details... ");
+                Date existingAssessmentEndTime = (Date) (existingDataList.get(0)
+                        .get(Constants.END_TIME));
+                Timestamp existingAssessmentEndTimeTimestamp = new Timestamp(
+                        existingAssessmentEndTime.getTime());
+                if (assessmentStartTime.compareTo(existingAssessmentEndTimeTimestamp) < 0
+                        && Constants.NOT_SUBMITTED.equalsIgnoreCase((String) existingDataList.get(0).get(Constants.STATUS))) {
+                    String questionSetFromAssessmentString = (String) existingDataList.get(0)
+                            .get(Constants.ASSESSMENT_SAVE_READ_RESPONSE_KEY);
+                    Map<String, Object> questionSetFromAssessment = new Gson().fromJson(
+                            questionSetFromAssessmentString, new TypeToken<HashMap<String, Object>>() {
+                            }.getType());
+                    questionSetFromAssessment.put(Constants.START_TIME, assessmentStartTime.getTime());
+                    questionSetFromAssessment.put(Constants.END_TIME,
+                            existingAssessmentEndTimeTimestamp.getTime());
+                    response.getResult().put(Constants.QUESTION_SET, questionSetFromAssessment);
+                }
+                else {
+                    updateErrorDetails(response, Constants.ASSESSMENT_HIERARCHY_SAVE_NOT_AVBL,
+                            HttpStatus.NO_CONTENT);
+                    return response;
+                }
+            }
+        } catch (Exception e) {
+            errMsg = String.format("Error while reading assessment. Exception: %s", e.getMessage());
+            logger.error(errMsg, e);
+        }
+        if (StringUtils.isNotBlank(errMsg)) {
+            updateErrorDetails(response, errMsg, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return response;
+    }
+
 }

@@ -18,4 +18,6 @@ public interface AssessmentServiceV5 {
 
 	public SBApiResponse saveAssessmentAsync(Map<String, Object> data, String userAuthToken,boolean editMode);
 
-}
+	public SBApiResponse readAssessmentSavePoint(String assessmentIdentifier, String token,boolean editMode);
+
+	}
