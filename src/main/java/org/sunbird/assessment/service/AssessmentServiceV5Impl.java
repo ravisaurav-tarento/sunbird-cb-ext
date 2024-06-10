@@ -949,7 +949,7 @@ public class AssessmentServiceV5Impl implements AssessmentServiceV5 {
                     userId, assessmentIdentifier);
 
             //Confirm whether the submitted request sections and questions match.
-            if (existingDataList.isEmpty()) {
+            if (existingDataList.isEmpty() || existingDataList.size() <1) {
                 updateErrorDetails(response, Constants.ASSESSMENT_HIERARCHY_READ_FAILED,
                         HttpStatus.INTERNAL_SERVER_ERROR);
                 return response;
@@ -968,8 +968,8 @@ public class AssessmentServiceV5Impl implements AssessmentServiceV5 {
                 List<Map<String, Object>> hierarchySectionList = new ArrayList<>();
                 Map<String, Object> assessmentHierarchy = new HashMap<>();
                 Map<String, Object> existingAssessmentData = new HashMap<>();
-                 errMsg = validateSubmitAssessmentRequest(submitRequest, userId, hierarchySectionList,
-                        sectionListFromSubmitRequest, assessmentHierarchy, existingAssessmentData,token,editMode);
+                 //errMsg = validateSubmitAssessmentRequest(submitRequest, userId, hierarchySectionList,
+                 //       sectionListFromSubmitRequest, assessmentHierarchy, existingAssessmentData,token,editMode);
                 if (StringUtils.isNotBlank(errMsg)) {
                     updateErrorDetails(response, Constants.ASSESSMENT_HIERARCHY_READ_FAILED,
                             HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1051,7 +1051,7 @@ public class AssessmentServiceV5Impl implements AssessmentServiceV5 {
             Timestamp assessmentStartTime = new Timestamp(new Date().getTime());
             if (existingDataList.isEmpty()) {
                 updateErrorDetails(response, Constants.ASSESSMENT_HIERARCHY_SAVE_NOT_AVBL,
-                        HttpStatus.NO_CONTENT);
+                        HttpStatus.BAD_REQUEST);
                 return response;
             } else {
                 logger.info("Assessment read... user has details... ");
@@ -1059,21 +1059,18 @@ public class AssessmentServiceV5Impl implements AssessmentServiceV5 {
                         .get(Constants.END_TIME));
                 Timestamp existingAssessmentEndTimeTimestamp = new Timestamp(
                         existingAssessmentEndTime.getTime());
-                if (assessmentStartTime.compareTo(existingAssessmentEndTimeTimestamp) < 0
+                if (assessmentStartTime.compareTo(existingAssessmentEndTimeTimestamp) > 0
                         && Constants.NOT_SUBMITTED.equalsIgnoreCase((String) existingDataList.get(0).get(Constants.STATUS))) {
                     String questionSetFromAssessmentString = (String) existingDataList.get(0)
                             .get(Constants.ASSESSMENT_SAVE_READ_RESPONSE_KEY);
                     Map<String, Object> questionSetFromAssessment = new Gson().fromJson(
                             questionSetFromAssessmentString, new TypeToken<HashMap<String, Object>>() {
                             }.getType());
-                    questionSetFromAssessment.put(Constants.START_TIME, assessmentStartTime.getTime());
-                    questionSetFromAssessment.put(Constants.END_TIME,
-                            existingAssessmentEndTimeTimestamp.getTime());
                     response.getResult().put(Constants.QUESTION_SET, questionSetFromAssessment);
                 }
                 else {
                     updateErrorDetails(response, Constants.ASSESSMENT_HIERARCHY_SAVE_NOT_AVBL,
-                            HttpStatus.NO_CONTENT);
+                            HttpStatus.BAD_REQUEST);
                     return response;
                 }
             }
@@ -1086,5 +1083,4 @@ public class AssessmentServiceV5Impl implements AssessmentServiceV5 {
         }
         return response;
     }
-
 }
