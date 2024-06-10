@@ -1063,6 +1063,7 @@ public class Constants {
 	public static final String PROFILE_GROUP_STATUS = "profileGroupStatus";
 	public static final String PROFILE_DESIGNATION_STATUS = "profileDesignationStatus";
 	public static final String NOT_MY_USER = "NOT-MY-USER";
+	public static final String SPACE = " ";
 
 	private Constants() {
 		throw new IllegalStateException("Utility class");
