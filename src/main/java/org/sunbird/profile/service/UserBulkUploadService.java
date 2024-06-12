@@ -16,8 +16,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-import org.sunbird.cache.RedisCacheMgr;
 import org.sunbird.cassandra.utils.CassandraOperation;
 import org.sunbird.common.model.SBApiResponse;
 import org.sunbird.common.util.CbExtServerProperties;
@@ -277,7 +275,7 @@ public class UserBulkUploadService {
                                 invalidErrList.add("Invalid Employee ID : Employee ID can contain alphanumeric characters or numeric character and have a max length of 30");
                             }
                             if(userRegistration.getEmployeeId().contains(Constants.SPACE)){
-                                invalidErrList.add("Employee Id cannot contain spaces");
+                                invalidErrList.add("Invalid Employee ID : Employee Id cannot contain spaces");
                             }
                         }
                     }
