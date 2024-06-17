@@ -2160,6 +2160,53 @@ public class ProfileServiceImpl implements ProfileService {
 		return "";
 	}
 
+	@Override
+	public SBApiResponse bulkUploadV2(MultipartFile mFile, String orgId, String channel, String userId, String userAuthToken) {
+		SBApiResponse response = ProjectUtil.createDefaultResponse(Constants.API_USER_BULK_UPLOAD);
+		try {
+			if (isFileExistForProcessingForMDO(orgId)) {
+				setErrorDataForMdo(response, "Failed to upload for another request as previous request is in processing state, please try after some time.");
+				return response;
+			}
+			SBApiResponse uploadResponse = storageService.uploadFile(mFile, serverConfig.getBulkUploadContainerName());
+			if (!HttpStatus.OK.equals(uploadResponse.getResponseCode())) {
+				setErrorData(response, String.format("Failed to upload file. Error: %s",
+						(String) uploadResponse.getParams().getErrmsg()));
+				return response;
+			}
+
+			Map<String, Object> uploadedFile = new HashMap<>();
+			uploadedFile.put(Constants.ROOT_ORG_ID, orgId);
+			uploadedFile.put(Constants.IDENTIFIER, UUID.randomUUID().toString());
+			uploadedFile.put(Constants.FILE_NAME, uploadResponse.getResult().get(Constants.NAME));
+			uploadedFile.put(Constants.FILE_PATH, uploadResponse.getResult().get(Constants.URL));
+			uploadedFile.put(Constants.DATE_CREATED_ON, new Timestamp(System.currentTimeMillis()));
+			uploadedFile.put(Constants.STATUS, Constants.INITIATED_CAPITAL);
+			uploadedFile.put(Constants.COMMENT, StringUtils.EMPTY);
+			uploadedFile.put(Constants.CREATED_BY, userId);
+
+			SBApiResponse insertResponse = cassandraOperation.insertRecord(Constants.DATABASE,
+					Constants.TABLE_USER_BULK_UPLOAD, uploadedFile);
+
+			if (!Constants.SUCCESS.equalsIgnoreCase((String) insertResponse.get(Constants.RESPONSE))) {
+				setErrorData(response, "Failed to update database with user bulk upload file details.");
+				return response;
+			}
+
+			response.getParams().setStatus(Constants.SUCCESSFUL);
+			response.setResponseCode(HttpStatus.OK);
+			response.getResult().putAll(uploadedFile);
+			uploadedFile.put(Constants.ORG_NAME, channel);
+			uploadedFile.put(Constants.X_AUTH_TOKEN, userAuthToken);
+			kafkaProducer.pushWithKey(serverConfig.getUserBulkUploadTopic(), uploadedFile, orgId);
+			sendBulkUploadNotification(orgId, channel, (String) uploadResponse.getResult().get(Constants.URL));
+		} catch (Exception e) {
+			setErrorData(response,
+					String.format("Failed to process user bulk upload request. Error: ", e.getMessage()));
+		}
+		return response;
+	}
+
 }
 
 
