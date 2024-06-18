@@ -589,14 +589,14 @@ public class UserBulkUploadService {
                         String tagStr = record.get(13).trim();
                         List<String> tagList = new ArrayList<>();
                         if (!StringUtils.isEmpty(tagStr)) {
-                            String[] tagStrList = tagStr.split(",", -1);
+                            String[] tagStrList = tagStr.split("&", -1);
                             for (String tag : tagStrList) {
                                 tagList.add(tag.trim());
                             }
                         }
                         userRegistration.setTag(tagList);
                         if (!ProjectUtil.validateTag(userRegistration.getTag())) {
-                            invalidErrList.add("Invalid Tag : Tags are comma separated string values. A Tag can contain only alphabets with spaces. eg: Bihar Circle, Patna Division");
+                            invalidErrList.add("Invalid Tag: Tags are separated by '&' and can contain only alphabets with spaces. e.g., Bihar Circle&Patna Division");
                         }
                     }
                     userRegistration.setOrgName(inputDataMap.get(Constants.ORG_NAME));
